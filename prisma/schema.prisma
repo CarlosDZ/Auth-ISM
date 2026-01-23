@@ -5,14 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider   = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "postgresql"
 }
 
-/*
 model Tenant {
     id        String   @id @default(cuid())
     name      String
@@ -25,21 +24,30 @@ model Tenant {
     users     User[]
     roles     Role[]
     auditLogs AuditLog[]
+    sessions  Session[]
+
+    loginAttempts LoginAttempt[]
+    APIKeys       APIKey[]
 }
 
 model User {
-    id        String   @id @default(cuid())
+    id        String    @id @default(cuid())
     email     String
     password  String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    isActive  Boolean  @default(true)
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    isActive  Boolean   @default(true)
+    deletedAt DateTime?
 
     tenantId String
     tenant   Tenant @relation(fields: [tenantId], references: [id])
 
-    roles  UserRole[]
-    tokens Token[]
+    roles           UserRole[]
+    sessions        Session[]
+    loginAttempts   LoginAttempt[]
+    auditsMade      AuditLog[]     @relation("ActorUser")
+    auditEffects    AuditLog[]     @relation("TargetUser")
+    revokedSessions Session[]      @relation("RevokedByUser")
 
     @@unique([tenantId, email])
 }
@@ -59,4 +67,180 @@ model Role {
     @@unique([tenantId, name])
 }
 
-*/
+model Scope {
+    id        String   @id @default(cuid())
+    name      String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    roles RoleScope[]
+}
+
+model RoleScope {
+    roleId  String
+    scopeId String
+
+    role  Role  @relation(fields: [roleId], references: [id])
+    scope Scope @relation(fields: [scopeId], references: [id])
+
+    createdAt DateTime @default(now())
+
+    @@id([roleId, scopeId])
+}
+
+model UserRole {
+    userId    String
+    roleId    String
+    createdAt DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id])
+    role Role @relation(fields: [roleId], references: [id])
+
+    @@id([userId, roleId])
+}
+
+model Session {
+    id           String      @id @default(cuid())
+    userId       String
+    tenantId     String
+    type         SessionType
+    ipAddress    String?
+    userAgent    String?
+    createdAt    DateTime    @default(now())
+    expiresAt    DateTime
+    revokedAt    DateTime?
+    revokedBy    String? // userId del que revoca (admin o el propio usuario)
+    lastActivity DateTime? // para auditoría y detección de inactividad
+    metadata     Json? // extensible: deviceId, geolocalización, fingerprint, etc.
+
+    user          User   @relation(fields: [userId], references: [id])
+    tenant        Tenant @relation(fields: [tenantId], references: [id])
+    revokedByUser User?  @relation("RevokedByUser", fields: [revokedBy], references: [id])
+
+    @@index([userId])
+    @@index([tenantId])
+    @@index([expiresAt])
+    @@index([revokedAt])
+    @@index([revokedBy])
+    @@index([tenantId, userId])
+    @@index([tenantId, createdAt])
+}
+
+enum SessionType {
+    ACCESS // Sesión normal de usuario (login)
+    REFRESH // Refresh token persistente
+    API_KEY // Sesión creada por una API key
+    MAGIC_LINK // Sesión temporal creada por magic link
+    PASSWORD_RESET // Sesión temporal para resetear contraseña
+    EMAIL_VERIFY // Sesión temporal para verificar email
+}
+
+model LoginAttempt {
+    id        String           @id @default(cuid())
+    tenantId  String?
+    userId    String?
+    email     String
+    success   Boolean
+    reason    LoginFailReason?
+    ipAddress String?
+    userAgent String?
+    createdAt DateTime         @default(now())
+    metadata  Json?
+
+    user   User?   @relation(fields: [userId], references: [id])
+    tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+    @@index([tenantId])
+    @@index([userId])
+    @@index([email])
+    @@index([success])
+    @@index([createdAt])
+    @@index([email, createdAt])
+    @@index([ipAddress, createdAt])
+}
+
+enum LoginFailReason {
+    INVALID_EMAIL
+    INVALID_PASSWORD
+    USER_INACTIVE
+    USER_BLOCKED //Proteccion contra fuerza bruta etc
+    TENANT_INACTIVE
+    MFA_REQUIRED // El usuario necesita MFA pero no lo ha completado
+    MFA_FAILED // El usuario intentó MFA pero falló
+    RATE_LIMITED // Demasiados intentos desde IP/email/usuario
+    PASSWORD_EXPIRED
+    NOT_ALLOWED // El método de login no está permitido para este usuario/tenant
+    UNKNOWN
+}
+
+model AuditLog {
+    id           String     @id @default(cuid())
+    tenantId     String?
+    actorUserId  String?
+    targetUserId String?
+    event        AuditEvent
+    ipAddress    String?
+    userAgent    String?
+    createdAt    DateTime   @default(now())
+    before       Json? // estado previo
+    after        Json? // estado posterior
+    metadata     Json? // datos adicionales
+
+    actorUser  User?   @relation("ActorUser", fields: [actorUserId], references: [id])
+    targetUser User?   @relation("TargetUser", fields: [targetUserId], references: [id])
+    tenant     Tenant? @relation(fields: [tenantId], references: [id])
+
+    @@index([tenantId])
+    @@index([actorUserId])
+    @@index([targetUserId])
+    @@index([event])
+    @@index([createdAt])
+    @@index([tenantId, createdAt])
+    @@index([actorUserId, createdAt])
+    @@index([event, createdAt])
+    @@index([tenantId, event])
+}
+
+enum AuditEvent {
+    USER_CREATED
+    USER_UPDATED
+    USER_DEACTIVATED
+    USER_REACTIVATED
+
+    ROLE_ASSIGNED
+    ROLE_UNASSIGNED
+
+    SCOPE_ADDED_TO_ROLE
+    SCOPE_REMOVED_FROM_ROLE
+
+    SESSION_REVOKED
+    SESSION_CREATED
+
+    PASSWORD_CHANGED
+    PASSWORD_RESET
+
+    MFA_ENABLED
+    MFA_DISABLED
+
+    TENANT_CREATED
+    TENANT_UPDATED
+    TENANT_SUSPENDED
+    TENANT_REACTIVATED
+
+    SECURITY_ALERT
+}
+
+model APIKey {
+    id        String    @id @default(cuid())
+    tenantId  String
+    name      String
+    hash      String
+    createdAt DateTime  @default(now())
+    lastUsed  DateTime?
+    metadata  Json?
+
+    tenant Tenant @relation(fields: [tenantId], references: [id])
+
+    @@unique([tenantId, name])
+    @@index([tenantId])
+}
