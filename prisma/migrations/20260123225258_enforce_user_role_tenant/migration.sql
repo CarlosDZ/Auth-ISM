@@ -545,3 +545,61 @@ CREATE TRIGGER prevent_session_tenant_change_trigger
 BEFORE UPDATE ON "Session"
 FOR EACH ROW
 EXECUTE FUNCTION prevent_session_tenant_change();
+
+
+-- Function to prevent renaming a Scope if it is already in use
+CREATE OR REPLACE FUNCTION prevent_scope_rename_if_in_use()
+RETURNS TRIGGER AS $$
+DECLARE
+    usage_count INTEGER;
+BEGIN
+    -- Only act when name changes
+    IF OLD."name" <> NEW."name" THEN
+        -- Count how many RoleScope entries reference this scope
+        SELECT COUNT(*) INTO usage_count
+        FROM "RoleScope"
+        WHERE "scopeId" = OLD."id";
+
+        IF usage_count > 0 THEN
+            RAISE EXCEPTION 'Scope name cannot be changed because it is already assigned to roles';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger for UPDATE on Scope
+CREATE TRIGGER prevent_scope_rename_if_in_use_trigger
+BEFORE UPDATE ON "Scope"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_scope_rename_if_in_use();
+
+
+-- Function to prevent changes on a tenant's slug if it has users
+CREATE OR REPLACE FUNCTION prevent_tenant_slug_change_if_in_use()
+RETURNS TRIGGER AS $$
+DECLARE
+    user_count INTEGER;
+BEGIN
+    -- Only act when slug changes
+    IF OLD."slug" <> NEW."slug" THEN
+        -- Count how many users belong to this tenant
+        SELECT COUNT(*) INTO user_count
+        FROM "User"
+        WHERE "tenantId" = OLD."id";
+
+        IF user_count > 0 THEN
+            RAISE EXCEPTION 'Tenant slug cannot be changed because the tenant already has users';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to block updates on user bearing tenant's slug
+CREATE TRIGGER prevent_tenant_slug_change_if_in_use_trigger
+BEFORE UPDATE ON "Tenant"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_tenant_slug_change_if_in_use();
