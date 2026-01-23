@@ -603,3 +603,117 @@ CREATE TRIGGER prevent_tenant_slug_change_if_in_use_trigger
 BEFORE UPDATE ON "Tenant"
 FOR EACH ROW
 EXECUTE FUNCTION prevent_tenant_slug_change_if_in_use();
+
+
+-- Indestructible tenants
+CREATE OR REPLACE FUNCTION prevent_tenant_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Tenants cannot be deleted. Use isActive instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_tenant_delete_trigger
+BEFORE DELETE ON "Tenant"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_tenant_delete();
+
+
+-- Indestructible users
+CREATE OR REPLACE FUNCTION prevent_user_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Users cannot be deleted. Use isActive instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_user_delete_trigger
+BEFORE DELETE ON "User"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_user_delete();
+
+
+-- Indestructible roles
+CREATE OR REPLACE FUNCTION prevent_role_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Roles cannot be deleted. Use isActive instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_role_delete_trigger
+BEFORE DELETE ON "Role"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_role_delete();
+
+
+-- Indestructible scopes
+CREATE OR REPLACE FUNCTION prevent_scope_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Scopes cannot be deleted. Use isActive instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_scope_delete_trigger
+BEFORE DELETE ON "Scope"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_scope_delete();
+
+
+-- Indestructible API keys
+CREATE OR REPLACE FUNCTION prevent_apikey_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'API keys cannot be deleted. Revoke them instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_apikey_delete_trigger
+BEFORE DELETE ON "APIKey"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_apikey_delete();
+
+
+-- Indestructible sessions
+CREATE OR REPLACE FUNCTION prevent_session_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Sessions cannot be deleted. Use revokedAt instead.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_session_delete_trigger
+BEFORE DELETE ON "Session"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_session_delete();
+
+
+-- Indestructible login attempts
+CREATE OR REPLACE FUNCTION prevent_loginattempt_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Login attempts cannot be deleted. They are part of security audit.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_loginattempt_delete_trigger
+BEFORE DELETE ON "LoginAttempt"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_loginattempt_delete();
+
+
+-- Indestructible audit logs
+CREATE OR REPLACE FUNCTION prevent_auditlog_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    RAISE EXCEPTION 'Audit logs cannot be deleted. They are required for compliance.';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_auditlog_delete_trigger
+BEFORE DELETE ON "AuditLog"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_auditlog_delete();
+
+

@@ -58,6 +58,8 @@ model Role {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    isActive Boolean @default(true)
+
     tenantId String
     tenant   Tenant @relation(fields: [tenantId], references: [id])
 
@@ -72,6 +74,7 @@ model Scope {
     name      String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    isActive  Boolean  @default(true)
 
     roles RoleScope[]
 }
