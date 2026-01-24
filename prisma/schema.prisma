@@ -50,6 +50,7 @@ model User {
     revokedSessions Session[]      @relation("RevokedByUser")
 
     @@unique([tenantId, email])
+    @@index([tenantId])
 }
 
 model Role {
