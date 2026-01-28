@@ -1,15 +1,15 @@
-import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsString, MaxLength } from 'class-validator';
+import { IsUserPassword } from '../../users/validators/user-password.validator';
 
 export class CreateFirstTenantAdminDto {
     @IsEmail()
     @MaxLength(192)
     email: string;
 
-    @MinLength(8)
-    @MaxLength(128)
+    @IsUserPassword()
     password: string;
 
     @IsString()
-    @MaxLength(192)
+    @MaxLength(160)
     name: string;
 }
