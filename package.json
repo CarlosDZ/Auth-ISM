@@ -5,7 +5,7 @@
     "author": "Carlos Delgado Zambarana",
     "private": true,
     "license": "UNLICENSED",
-    "appConfig": {
+    "AppConfig": {
         "baseUrl": "localhost:3000",
         "emailDomain": "\"Auth-ISM API\" <verify@authapi.carlosdz.dev>"
     },
