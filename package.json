@@ -7,7 +7,7 @@
     "license": "UNLICENSED",
     "appConfig": {
         "baseUrl": "localhost:3000",
-        "emailDomain": "Auth-ISM API <verify@authapi.carlosdz.dev>"
+        "emailDomain": "\"Auth-ISM API\" <verify@authapi.carlosdz.dev>"
     },
     "scripts": {
         "build": "nest build",
