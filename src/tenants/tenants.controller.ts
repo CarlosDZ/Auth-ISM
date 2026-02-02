@@ -12,7 +12,7 @@ export class TenantsController {
     ) {}
 
     @Post() async createTenant(@Body() dto: CreateTenantDto) {
-        return this.tenantsService.createTenant(dto);
+        return this.tenantsService.registerTenant(dto);
     }
 
     @Post(':slug/send-verification')
