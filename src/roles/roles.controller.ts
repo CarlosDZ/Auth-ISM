@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, UseGuards } from '@nestjs/common';
 import { TenantAdminGuard } from 'src/auth/guards/tenant-admin.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
@@ -40,5 +40,24 @@ export class RolesController {
         const scopeId: string = scope.id;
 
         return this.rolesService.assignScopeToRole(tenantId, roleId, scopeId);
+    }
+
+    @UseGuards(JwtAuthGuard, TenantAdminGuard)
+    @Delete(':roleName/scopes/:scopeName')
+    async deleteRoleScopeRelation(
+        @Param('slug') slug: string,
+        @Param('roleName') roleName: string,
+        @Param('scopeName') scopeName: string
+    ) {
+        const tenant = await this.tenantLookupService.findBySlug(slug);
+        const tenantId: string = tenant.id;
+
+        const role = await this.roleLookupService.findOnTenant(roleName, tenantId);
+        const scope = await this.scopeLookupService.findOnTenant(scopeName, tenantId);
+
+        const roleId: string = role.id;
+        const scopeId: string = scope.id;
+
+        return this.rolesService.deleteRoleScopeRelation(tenantId, roleId, scopeId);
     }
 }

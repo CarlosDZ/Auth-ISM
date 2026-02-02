@@ -77,4 +77,29 @@ export class RolesService {
         const relation = await this.prisma.roleScope.create({ data: { roleId, scopeId } });
         return { message: 'Scope assigned to role successfully', relation };
     }
+
+    async deleteRoleScopeRelation(tenantId: string, roleId: string, scopeId: string) {
+        const role = await this.prisma.role.findUnique({ where: { id: roleId } });
+        if (!role) {
+            throw new NotFoundException('Role not found');
+        }
+        const scope = await this.prisma.scope.findUnique({ where: { id: scopeId } });
+        if (!scope) {
+            throw new NotFoundException('Scope not found');
+        }
+        if (role.tenantId !== tenantId) {
+            throw new ForbiddenException('Role does not belong to this tenant');
+        }
+        if (scope.tenantId !== tenantId) {
+            throw new ForbiddenException('Scope does not belong to this tenant');
+        }
+        const existing = await this.prisma.roleScope.findUnique({
+            where: { roleId_scopeId: { roleId, scopeId } }
+        });
+        if (!existing) {
+            throw new ConflictException('This scope is not assigned to this role');
+        }
+        await this.prisma.roleScope.delete({ where: { roleId_scopeId: { roleId, scopeId } } });
+        return { message: 'Scope deleted from this role successfully' };
+    }
 }
