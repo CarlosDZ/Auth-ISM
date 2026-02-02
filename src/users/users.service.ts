@@ -3,7 +3,7 @@ import { PasswordHasher } from './security/password-hasher.service';
 import { Prisma } from '@prisma/client';
 import { CreateFirstTenantAdminDto } from 'src/tenants/dto/create-first-tenant-admin.dto';
 import { User } from '@prisma/client';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreatedUserResponseDto, CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
@@ -30,10 +30,10 @@ export class UsersService {
         });
     }
 
-    async registerTenantUser(tenantId: string, dto: CreateUserDto) {
+    async registerTenantUser(tenantId: string, dto: CreateUserDto): Promise<CreatedUserResponseDto> {
         const hashed = await this.passwordHasher.hash(dto.password);
 
-        return await this.prisma.user.create({
+        const user = await this.prisma.user.create({
             data: {
                 email: dto.email,
                 name: dto.name,
@@ -41,5 +41,10 @@ export class UsersService {
                 tenantId: tenantId
             }
         });
+
+        return {
+            name:user.name,
+            email:user.email
+        }
     }
 }
