@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Param, Body, UseGuards, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
@@ -36,7 +36,7 @@ export class UsersController {
 
     @UseGuards(JwtAuthGuard, TenantAdminGuard)
     @Post(':userMail/roles/:roleName')
-    async assignScopeToRole(
+    async assignRoleToUser(
         @Param('slug') slug: string,
         @Param('roleName') roleName: string,
         @Param('userMail') userMail: string
@@ -51,5 +51,24 @@ export class UsersController {
         const userId: string = user.id;
 
         return this.usersService.assignRoleToUser(tenantId, userId, roleId);
+    }
+
+    @UseGuards(JwtAuthGuard, TenantAdminGuard)
+    @Delete(':userMail/roles/:roleName')
+    async deleteRoleFromUser(
+        @Param('slug') slug: string,
+        @Param('roleName') roleName: string,
+        @Param('userMail') userMail: string
+    ) {
+        const tenant = await this.tenantLookupService.findBySlug(slug);
+        const tenantId: string = tenant.id;
+
+        const role = await this.roleLookupService.findOnTenant(roleName, tenantId);
+        const user = await this.userLookupService.findOnTenant(userMail, tenantId);
+
+        const roleId: string = role.id;
+        const userId: string = user.id;
+
+        return this.usersService.deleteRoleFromUser(tenantId, userId, roleId);
     }
 }
