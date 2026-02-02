@@ -5,12 +5,14 @@ import { CreateFirstTenantAdminDto } from 'src/tenants/dto/create-first-tenant-a
 import { User } from '@prisma/client';
 import { CreatedUserResponseDto, CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { EmailVerificationService } from 'src/auth/email-verification.service';
 
 @Injectable()
 export class UsersService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly passwordHasher: PasswordHasher
+        private readonly passwordHasher: PasswordHasher,
+        private readonly emailVerificationService: EmailVerificationService
     ) {}
 
     async createTenantAdmin(
@@ -41,6 +43,8 @@ export class UsersService {
                 tenantId: tenantId
             }
         });
+
+        await this.emailVerificationService.sendVerification(tenantId, user.email)
 
         return {
             name:user.name,
