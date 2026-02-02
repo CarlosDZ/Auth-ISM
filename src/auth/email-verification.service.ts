@@ -2,10 +2,13 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { GeneratedVerificationTokenDto } from './dto/verification-token.dto';
+import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
 export class EmailVerificationService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService,
+        private readonly mailerService: MailerService
+    ) {}
 
     async generateVerificationToken(
         userId: string,
@@ -95,13 +98,14 @@ export class EmailVerificationService {
     }
 
     async resendVerification(tenantId: string, email: string): Promise<void> {
-        const user = await this.prisma.user.findUnique({ where: { tenantId_email: { tenantId, email }
-         } });
+        const user = await this.prisma.user.findUnique({
+            where: { tenantId_email: { tenantId, email } }
+        });
 
         if (!user) return;
 
-        await this.generateVerificationToken(user.id, user.email);
+        const tokenData = await this.generateVerificationToken(user.id, user.email);
 
-        // mailer
+        await this.mailerService.sendVerificationEmail(user.email, tokenData.token);
     }
 }
