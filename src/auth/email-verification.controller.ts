@@ -14,7 +14,7 @@ export class EmailVerificationController {
     async resend(@Param('slug') slug: string, @Body() dto: CreateVerificationTokenDto) {
         const tenant = await this.tenantsService.findBySlug(slug);
 
-        await this.emailVerificationService.resendVerification(tenant.id, dto.email);
+        await this.emailVerificationService.sendVerification(tenant.id, dto.email);
 
         return {
             message: 'If the email exists, a new verification link was sent.'
