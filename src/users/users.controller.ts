@@ -1,22 +1,23 @@
 import { Controller, Post, Param, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { TenantsService } from '../tenants/tenants.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 
 @Controller('tenants/:slug/users')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
-        private readonly tenantsService: TenantsService
+        private readonly tenantLookupService: TenantLookupService
     ) {}
 
     @Post()
     async createUserInTenant(@Param('slug') slug: string, @Body() dto: CreateUserDto) {
         // 1 - Slug to id
-        const tenant = await this.tenantsService.findBySlug(slug);
+        const tenant = await this.tenantLookupService.findBySlug(slug);
 
         // 2 - User registration
-        const user = await this.usersService.registerTenantUser(tenant.id, dto);
+        const tenantId: string = tenant.id;
+        const user = await this.usersService.registerTenantUser(tenantId, dto);
 
         return {
             tenant: {

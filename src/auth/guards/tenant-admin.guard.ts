@@ -1,14 +1,14 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { RolesService } from "src/roles/roles.service";
-import { TenantsService } from "src/tenants/tenants.service";
 import { AuthUser } from "../types/auth-user.type";
 import { UsersService } from "src/users/users.service";
+import { TenantLookupService } from "src/utils/tenant-lookup.service";
 
 
 @Injectable()
 export class TenantAdminGuard implements CanActivate {
     constructor(
-        private readonly tenantsService: TenantsService,
+        private readonly tenantLookupService: TenantLookupService,
         private readonly rolesService: RolesService,
         private readonly usersService: UsersService
     ) {}
@@ -24,7 +24,7 @@ export class TenantAdminGuard implements CanActivate {
         
         await this.usersService.ensureUserIsValid(user.id);
 
-        const tenant = await this.tenantsService.findBySlug(slug);
+        const tenant = await this.tenantLookupService.findBySlug(slug);
         if (!tenant) {
             throw new NotFoundException('Tenant not found');
         }
