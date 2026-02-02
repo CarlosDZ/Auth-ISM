@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UsersService } from 'src/users/users.service';
@@ -57,5 +57,17 @@ export class TenantsService {
                 };
             }
         );
+    }
+
+    async findBySlug(slug: string) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { slug }
+        });
+
+        if (!tenant) {
+            throw new NotFoundException(`Tenant with slug "${slug}" not found`);
+        }
+
+        return tenant;
     }
 }
