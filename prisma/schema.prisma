@@ -32,25 +32,26 @@ model Tenant {
 }
 
 model User {
-    id        String    @id @default(cuid())
-    name      String
-    email     String
-    isVerified Boolean @default(false)
-    password  String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    isActive  Boolean   @default(true)
-    deletedAt DateTime?
+    id         String    @id @default(cuid())
+    name       String
+    email      String
+    isVerified Boolean   @default(false)
+    password   String
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    isActive   Boolean   @default(true)
+    deletedAt  DateTime?
 
     tenantId String
     tenant   Tenant @relation(fields: [tenantId], references: [id])
 
-    roles           UserRole[]
-    sessions        Session[]
-    loginAttempts   LoginAttempt[]
-    auditsMade      AuditLog[]     @relation("ActorUser")
-    auditEffects    AuditLog[]     @relation("TargetUser")
-    revokedSessions Session[]      @relation("RevokedByUser")
+    roles                  UserRole[]
+    sessions               Session[]
+    loginAttempts          LoginAttempt[]
+    auditsMade             AuditLog[]               @relation("ActorUser")
+    auditEffects           AuditLog[]               @relation("TargetUser")
+    revokedSessions        Session[]                @relation("RevokedByUser")
+    EmailVerificationToken EmailVerificationToken[]
 
     @@unique([tenantId, email])
     @@index([tenantId])
@@ -259,4 +260,18 @@ model APIKey {
 
     @@unique([tenantId, name])
     @@index([tenantId])
+}
+
+model EmailVerificationToken {
+    id        String    @id @default(cuid())
+    userId    String
+    email     String
+    token     String    @unique
+    expiresAt DateTime
+    usedAt    DateTime?
+    revoked   Boolean   @default(false)
+    revokedAt DateTime?
+    createdAt DateTime  @default(now())
+
+    user User @relation(fields: [userId], references: [id])
 }
