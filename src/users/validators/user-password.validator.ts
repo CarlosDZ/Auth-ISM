@@ -22,9 +22,9 @@ export function IsUserPassword(validationOptions?: ValidationOptions) {
                     const hasLower = /[a-z]/.test(value);
 
                     if (hasSymbol && length < 8) return false;
-                    if (hasNumber && length < 16) return false;
-                    if (hasUpper && length < 32) return false;
-                    if (hasLower && length < 64) return false;
+                    if (hasNumber && !hasSymbol && length < 16) return false;
+                    if (hasUpper && !hasNumber && !hasSymbol && length < 32) return false;
+                    if (hasLower && !hasUpper && !hasNumber && !hasSymbol && length < 64) return false;
                     if (length > 128) return false;
 
                     return true;
