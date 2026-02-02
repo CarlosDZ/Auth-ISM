@@ -1,4 +1,4 @@
-import { IsDate, IsEmail, IsString, MaxLength } from 'class-validator';
+import { IsDate, IsEmail, IsString, Length, MaxLength } from 'class-validator';
 
 export class CreateVerificationTokenDto {
     @IsEmail()
@@ -12,6 +12,7 @@ export class GeneratedVerificationTokenDto {
     email: string;
 
     @IsString()
+    @Length(64, 64)
     token: string;
 
     @IsDate()
@@ -19,4 +20,10 @@ export class GeneratedVerificationTokenDto {
 
     @IsDate()
     createdAt: Date;
+}
+
+export class VerifyEmailDto {
+    @IsString()
+    @Length(64, 64)
+    token: string;
 }

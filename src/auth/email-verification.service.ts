@@ -93,4 +93,15 @@ export class EmailVerificationService {
             return { success: true };
         });
     }
+
+    async resendVerification(tenantId: string, email: string): Promise<void> {
+        const user = await this.prisma.user.findUnique({ where: { tenantId_email: { tenantId, email }
+         } });
+
+        if (!user) return;
+
+        await this.generateVerificationToken(user.id, user.email);
+
+        // mailer
+    }
 }
