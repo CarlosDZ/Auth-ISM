@@ -1,8 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Resend } from 'resend';
 import { AppConfig } from '../config/app-config';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+
 
 @Injectable()
 export class MailerService {
@@ -10,10 +9,7 @@ export class MailerService {
 
     async sendVerificationEmail(email: string, token: string) {
         const verifyUrl = `${AppConfig.baseUrl}/verify-email?token=${token}`;
-
-        const html = this.renderTemplate('verify-email.html', {
-            verifyUrl
-        });
+        const html = this.renderTemplate(verifyUrl);
 
         try {
             await this.resend.emails.send({
@@ -28,14 +24,28 @@ export class MailerService {
         }
     }
 
-    private renderTemplate(templateName: string, variables: Record<string, string>) {
-        const templatePath = join(__dirname, 'templates', templateName);
-        let html = readFileSync(templatePath, 'utf8');
+    private renderTemplate(verifyUrl: string): string {
+        return ` 
+        <html>
+            <body style="font-family: Arial, sans-serif; padding: 20px">
+                <h1>Verify your email</h1>
+                <p>Click the link below to verify your email:</p>
+                <p>
+                <a href="${verifyUrl}" style="
+                    background: #4f46e5;
+                    color: white;
+                    padding: 12px 24px;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    display: inline-block;
+                "
+            >Verify Email</a> </p>
 
-        for (const [key, value] of Object.entries(variables)) {
-            html = html.replace(new RegExp(`{{${key}}}`, 'g'), value);
-        }
+            <p>If the button doesn't work, copy and paste this URL:</p>
+            <p>${verifyUrl}</p>
 
-        return html;
+            <p>This link expires in 30 minutes.</p>
+            </body>
+        </html> `;
     }
 }
