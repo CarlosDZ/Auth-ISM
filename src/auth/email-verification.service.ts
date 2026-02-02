@@ -6,7 +6,8 @@ import { MailerService } from 'src/mailer/mailer.service';
 
 @Injectable()
 export class EmailVerificationService {
-    constructor(private readonly prisma: PrismaService,
+    constructor(
+        private readonly prisma: PrismaService,
         private readonly mailerService: MailerService
     ) {}
 
@@ -97,7 +98,7 @@ export class EmailVerificationService {
         });
     }
 
-    async resendVerification(tenantId: string, email: string): Promise<void> {
+    async sendVerification(tenantId: string, email: string): Promise<void> {
         const user = await this.prisma.user.findUnique({
             where: { tenantId_email: { tenantId, email } }
         });

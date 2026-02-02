@@ -4,13 +4,15 @@ import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UsersService } from 'src/users/users.service';
 import { RolesService } from 'src/roles/roles.service';
 import { TenantWithAdminResponse } from './types/tenant-with-admin-response.interface';
+import { EmailVerificationService } from 'src/auth/email-verification.service';
 
 @Injectable()
 export class TenantsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly usersService: UsersService,
-        private readonly rolesService: RolesService
+        private readonly rolesService: RolesService,
+        private readonly emailVerificationService: EmailVerificationService
     ) {}
 
     async createTenant(dto: CreateTenantDto): Promise<TenantWithAdminResponse> {
@@ -57,6 +59,16 @@ export class TenantsService {
                 };
             }
         );
+    }
+
+    async registerTenant(dto: CreateTenantDto): Promise<TenantWithAdminResponse> {
+        // 1 - SQL Transaction
+        const result = await this.createTenant(dto);
+
+        // 2 - Exec the service
+        await this.emailVerificationService.sendVerification(result.tenant.id, result.admin.email);
+
+        return result;
     }
 
     async findBySlug(slug: string) {
