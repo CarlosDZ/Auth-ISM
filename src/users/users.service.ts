@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PasswordHasher } from './security/password-hasher.service';
 import { Prisma } from '@prisma/client';
 import { CreateFirstTenantAdminDto } from 'src/tenants/dto/create-first-tenant-admin.dto';
@@ -32,7 +32,10 @@ export class UsersService {
         });
     }
 
-    async registerTenantUser(tenantId: string, dto: CreateUserDto): Promise<CreatedUserResponseDto> {
+    async registerTenantUser(
+        tenantId: string,
+        dto: CreateUserDto
+    ): Promise<CreatedUserResponseDto> {
         const hashed = await this.passwordHasher.hash(dto.password);
 
         const user = await this.prisma.user.create({
@@ -44,11 +47,38 @@ export class UsersService {
             }
         });
 
-        await this.emailVerificationService.sendVerification(tenantId, user.email)
+        await this.emailVerificationService.sendVerification(tenantId, user.email);
 
         return {
-            name:user.name,
-            email:user.email
+            name: user.name,
+            email: user.email
+        };
+    }
+
+    async isVerified(userId: string): Promise<boolean> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { isVerified: true }
+        });
+        return !!user?.isVerified;
+    }
+
+    async ensureUserIsValid(userId: string): Promise<void> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { isVerified: true, isActive: true, deletedAt: true }
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        if (!user.isVerified) {
+            throw new ForbiddenException('Email not verified');
+        }
+        if (!user.isActive) {
+            throw new ForbiddenException('User is not active');
+        }
+        if (user.deletedAt !== null) {
+            throw new ForbiddenException('User account has been deleted');
         }
     }
 }
