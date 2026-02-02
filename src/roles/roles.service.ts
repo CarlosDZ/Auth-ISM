@@ -102,4 +102,5 @@ export class RolesService {
         await this.prisma.roleScope.delete({ where: { roleId_scopeId: { roleId, scopeId } } });
         return { message: 'Scope deleted from this role successfully' };
     }
+
 }

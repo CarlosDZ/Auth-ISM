@@ -1,13 +1,19 @@
-import { Controller, Post, Param, Body } from '@nestjs/common';
+import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { TenantAdminGuard } from 'src/auth/guards/tenant-admin.guard';
+import { RoleLookupService } from 'src/utils/role-lookup.service';
+import { UserLookupService } from 'src/utils/user-lookup.service';
 
 @Controller('tenants/:slug/users')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
-        private readonly tenantLookupService: TenantLookupService
+        private readonly tenantLookupService: TenantLookupService,
+        private readonly roleLookupService: RoleLookupService,
+        private readonly userLookupService: UserLookupService
     ) {}
 
     @Post()
@@ -26,5 +32,24 @@ export class UsersController {
             },
             user
         };
+    }
+
+    @UseGuards(JwtAuthGuard, TenantAdminGuard)
+    @Post(':userMail/roles/:roleName')
+    async assignScopeToRole(
+        @Param('slug') slug: string,
+        @Param('roleName') roleName: string,
+        @Param('userMail') userMail: string
+    ) {
+        const tenant = await this.tenantLookupService.findBySlug(slug);
+        const tenantId: string = tenant.id;
+
+        const role = await this.roleLookupService.findOnTenant(roleName, tenantId);
+        const user = await this.userLookupService.findOnTenant(userMail, tenantId);
+
+        const roleId: string = role.id;
+        const userId: string = user.id;
+
+        return this.usersService.assignRoleToUser(tenantId, userId, roleId);
     }
 }

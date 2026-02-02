@@ -81,4 +81,40 @@ export class UsersService {
             throw new ForbiddenException('User account has been deleted');
         }
     }
+
+    async assignRoleToUser(tenantId: string, userId: string, roleId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        const role = await this.prisma.role.findUnique({
+            where: { id: roleId }
+        });
+
+        await this.ensureUserIsValid(userId);
+
+        if (!role) {
+            throw new NotFoundException('Role not found');
+        }
+        if (!role.isActive) {
+            throw new ForbiddenException('Role is not active');
+        }
+        if (user?.tenantId !== tenantId) {
+            throw new ForbiddenException('User does not beelong to this tenant.');
+        }
+        if (role.tenantId !== tenantId) {
+            throw new ForbiddenException('Role does not beelong to this tenant.');
+        }
+
+        const relation = await this.prisma.userRole.create({
+            data: {
+                userId,
+                roleId
+            }
+        });
+        if (relation) {
+            return 'Role assigned with exit';
+        }
+        return;
+    }
 }
