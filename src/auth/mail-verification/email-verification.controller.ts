@@ -1,13 +1,12 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Param } from '@nestjs/common';
 import { EmailVerificationService } from './email-verification.service';
-import { VerifyEmailDto } from './dto/verification-token.dto';
 @Controller('auth')
 export class EmailVerificationController {
     constructor(private readonly emailVerificationService: EmailVerificationService) {}
 
-    @Post('verify-email')
-    async verifyEmail(@Body() dto: VerifyEmailDto): Promise<{ success: true }> {
-        return this.emailVerificationService.verifyToken(dto.token);
+    @Post('verify-email/:token')
+    async verifyEmail(@Param('token') token: string): Promise<{ success: true }> {
+        return this.emailVerificationService.verifyToken(token);
     }
 }
 

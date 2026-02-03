@@ -21,9 +21,3 @@ export class GeneratedVerificationTokenDto {
     @IsDate()
     createdAt: Date;
 }
-
-export class VerifyEmailDto {
-    @IsString()
-    @Length(64, 64)
-    token: string;
-}

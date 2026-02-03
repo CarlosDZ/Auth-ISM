@@ -2,13 +2,12 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Resend } from 'resend';
 import { AppConfig } from '../config/app-config';
 
-
 @Injectable()
 export class MailerService {
     private readonly resend = new Resend(process.env.RESEND_API_KEY);
 
     async sendVerificationEmail(email: string, token: string) {
-        const verifyUrl = `${AppConfig.baseUrl}/verify-email?token=${token}`;
+        const verifyUrl = `${AppConfig.baseUrl}/auth/verify-email/${token}`;
         const html = this.renderTemplate(verifyUrl);
 
         try {
