@@ -10,6 +10,7 @@ import { SecurityModule } from 'src/users/security/security.module';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 import { UserLookupService } from 'src/utils/user-lookup.service';
 import { AuthController } from './auth.controller';
+import { ConfigService } from '@nestjs/config';
 @Module({
     imports: [
         UsersModule,
@@ -17,9 +18,12 @@ import { AuthController } from './auth.controller';
         TenantsModule,
         SecurityModule,
         GuardsModule,
-        JwtModule.register({
-            secret: process.env.JWT_SECRET,
-            signOptions: { expiresIn: '20m' }
+        JwtModule.registerAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                secret: config.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: '20m' }
+            })
         })
     ],
     controllers: [AuthController],
