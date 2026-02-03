@@ -5,8 +5,8 @@ import { UtilsModule } from 'src/utils/utils.module';
 import { TenantAdminGuard } from './tenant-admin.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 @Module({
-  imports: [UtilsModule, RolesModule],
-  providers: [TenantAdminGuard, JwtAuthGuard],
-  exports: [GuardsModule, JwtModule]
+    imports: [UtilsModule, RolesModule],
+    providers: [TenantAdminGuard, JwtAuthGuard],
+    exports: [GuardsModule, JwtModule]
 })
 export class GuardsModule {}

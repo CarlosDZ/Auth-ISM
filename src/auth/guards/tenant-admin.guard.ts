@@ -1,9 +1,15 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { RolesService } from "src/roles/roles.service";
-import { AuthUser } from "../types/auth-user.type";
-import { TenantLookupService } from "src/utils/tenant-lookup.service";
-import { PrismaService } from "prisma/prisma.service";
-
+import {
+    CanActivate,
+    ExecutionContext,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
+    UnauthorizedException
+} from '@nestjs/common';
+import { RolesService } from 'src/roles/roles.service';
+import { AuthUser } from '../types/auth-user.type';
+import { TenantLookupService } from 'src/utils/tenant-lookup.service';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class TenantAdminGuard implements CanActivate {
@@ -23,12 +29,11 @@ export class TenantAdminGuard implements CanActivate {
         }
 
         const user = await this.prisma.user.findUnique({
-            where: { id: authUser.id },
+            where: { id: authUser.id }
         });
 
-
-        if(!user){
-            throw new NotFoundException('User not found')
+        if (!user) {
+            throw new NotFoundException('User not found');
         }
         if (!user.isVerified) {
             throw new ForbiddenException('Email not verified');
