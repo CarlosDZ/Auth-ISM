@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from 'prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { GeneratedVerificationTokenDto } from './dto/verification-token.dto';
 import { MailerService } from 'src/mailer/mailer.service';

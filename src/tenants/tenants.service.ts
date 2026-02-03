@@ -4,7 +4,7 @@ import { CreateTenantDto } from './dto/create-tenant.dto';
 import { UsersService } from 'src/users/users.service';
 import { RolesService } from 'src/roles/roles.service';
 import { TenantWithAdminResponse } from './types/tenant-with-admin-response.interface';
-import { EmailVerificationService } from 'src/auth/email-verification.service';
+import { EmailVerificationService } from 'src/auth/mail-verification/email-verification.service';
 
 @Injectable()
 export class TenantsService {

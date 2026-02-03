@@ -4,7 +4,7 @@ import { TenantsService } from './tenants.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RolesService } from 'src/roles/roles.service';
 import { UsersModule } from 'src/users/users.module';
-import { EmailVerificationModule } from 'src/auth/email-verification.module';
+import { EmailVerificationModule } from 'src/auth/mail-verification/email-verification.module';
 import { UtilsModule } from 'src/utils/utils.module';
 
 @Module({

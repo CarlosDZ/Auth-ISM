@@ -5,7 +5,7 @@ import { CreateFirstTenantAdminDto } from 'src/tenants/dto/create-first-tenant-a
 import { User } from '@prisma/client';
 import { CreatedUserResponseDto, CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { EmailVerificationService } from 'src/auth/email-verification.service';
+import { EmailVerificationService } from 'src/auth/mail-verification/email-verification.service';
 
 @Injectable()
 export class UsersService {

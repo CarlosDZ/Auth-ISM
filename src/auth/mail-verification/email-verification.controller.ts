@@ -1,7 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { EmailVerificationService } from './email-verification.service';
 import { VerifyEmailDto } from './dto/verification-token.dto';
-
 @Controller('auth')
 export class EmailVerificationController {
     constructor(private readonly emailVerificationService: EmailVerificationService) {}

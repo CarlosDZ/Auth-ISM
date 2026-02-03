@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { RolesService } from "src/roles/roles.service";
 import { AuthUser } from "../types/auth-user.type";
-import { UsersService } from "src/users/users.service";
 import { TenantLookupService } from "src/utils/tenant-lookup.service";
+import { PrismaService } from "prisma/prisma.service";
 
 
 @Injectable()
@@ -10,19 +10,35 @@ export class TenantAdminGuard implements CanActivate {
     constructor(
         private readonly tenantLookupService: TenantLookupService,
         private readonly rolesService: RolesService,
-        private readonly usersService: UsersService
+        private readonly prisma: PrismaService
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const req = context.switchToHttp().getRequest();
-        const user: AuthUser = req.user;
+        const authUser: AuthUser = req.user;
         const slug: string = req.params.slug;
 
-        if (!user) {
+        if (!authUser) {
             throw new UnauthorizedException('Not authenticated');
         }
-        
-        await this.usersService.ensureUserIsValid(user.id);
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: authUser.id },
+        });
+
+
+        if(!user){
+            throw new NotFoundException('User not found')
+        }
+        if (!user.isVerified) {
+            throw new ForbiddenException('Email not verified');
+        }
+        if (!user.isActive) {
+            throw new ForbiddenException('User is not active');
+        }
+        if (user.deletedAt !== null) {
+            throw new ForbiddenException('User account has been deleted');
+        }
 
         const tenant = await this.tenantLookupService.findBySlug(slug);
         if (!tenant) {

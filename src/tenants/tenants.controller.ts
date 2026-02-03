@@ -1,9 +1,9 @@
 import { Body, Controller, Post, Param } from '@nestjs/common';
 import { CreateTenantDto } from './dto/create-tenant.dto';
-import { CreateVerificationTokenDto } from 'src/auth/dto/verification-token.dto';
-import { EmailVerificationService } from 'src/auth/email-verification.service';
+import { CreateVerificationTokenDto } from 'src/auth/mail-verification/dto/verification-token.dto';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 import { TenantsService } from './tenants.service';
+import { EmailVerificationService } from 'src/auth/mail-verification/email-verification.service';
 
 @Controller('tenants')
 export class TenantsController {
