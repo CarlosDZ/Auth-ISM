@@ -7,5 +7,5 @@ export class LoginDataDto {
     email: string;
 
     @IsUserPassword()
-    passoword: string;
+    password: string;
 }

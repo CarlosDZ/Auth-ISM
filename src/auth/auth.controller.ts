@@ -4,14 +4,13 @@ import { LoginDataDto } from './dto/login-data.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) {}
 
-  @Post(':slug/login')
-    async login(@Param('slug') slug:string, @Body() dto: LoginDataDto, @Req() req) {
-        
-    const ip: string = req.ip ?? req.headers['x-forwarded-for'] ?? "";
-    const userAgent: string = req.headers['user-agent'] ?? "";
+    @Post(':slug/login')
+    async login(@Param('slug') slug: string, @Body() dto: LoginDataDto, @Req() req) {
+        const ip: string = req.ip ?? req.headers['x-forwarded-for'] ?? '';
+        const userAgent: string = req.headers['user-agent'] ?? '';
 
-    return this.authService.login(slug,dto, ip, userAgent);
-  }
+        return this.authService.login(slug, dto, ip, userAgent);
+    }
 }

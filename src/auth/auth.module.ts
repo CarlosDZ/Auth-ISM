@@ -9,6 +9,7 @@ import { PrismaService } from 'prisma/prisma.service';
 import { SecurityModule } from 'src/users/security/security.module';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 import { UserLookupService } from 'src/utils/user-lookup.service';
+import { AuthController } from './auth.controller';
 @Module({
     imports: [
         UsersModule,
@@ -21,6 +22,7 @@ import { UserLookupService } from 'src/utils/user-lookup.service';
             signOptions: { expiresIn: '20m' }
         })
     ],
+    controllers: [AuthController],
     providers: [AuthService, PrismaService, TenantLookupService, UserLookupService],
     exports: [AuthService, JwtModule]
 })

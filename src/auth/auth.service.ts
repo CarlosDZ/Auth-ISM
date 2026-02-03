@@ -31,7 +31,7 @@ export class AuthService {
             );
         }
 
-        const valid = await this.passwordHasher.verify(user.password, dto.passoword);
+        const valid = await this.passwordHasher.verify(user.password, dto.password);
 
         if (!valid) {
             throw new ForbiddenException(
@@ -46,18 +46,20 @@ export class AuthService {
                 type: 'REFRESH',
                 ipAddress: ip,
                 userAgent,
-                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 dias
             }
         });
 
-        const accessToken = this.jwtService.sign({
-            sub: user.id,
-            tenantId: user.tenantId,
-            sessionId: session.id
-        },
-    {
-        expiresIn: '20m'
-    });
+        const accessToken = this.jwtService.sign(
+            {
+                sub: user.id,
+                tenantId: user.tenantId,
+                sessionId: session.id
+            },
+            {
+                expiresIn: '20m'
+            }
+        );
 
         const refreshToken = session.id;
 
