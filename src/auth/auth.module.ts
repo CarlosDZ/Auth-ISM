@@ -11,6 +11,8 @@ import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 import { UserLookupService } from 'src/utils/user-lookup.service';
 import { AuthController } from './auth.controller';
 import { ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
     imports: [
         UsersModule,
@@ -18,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
         TenantsModule,
         SecurityModule,
         GuardsModule,
+        PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.registerAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
@@ -27,7 +30,7 @@ import { ConfigService } from '@nestjs/config';
         })
     ],
     controllers: [AuthController],
-    providers: [AuthService, PrismaService, TenantLookupService, UserLookupService],
+    providers: [AuthService, PrismaService, TenantLookupService, UserLookupService, JwtStrategy],
     exports: [AuthService, JwtModule]
 })
 export class AuthModule {}
