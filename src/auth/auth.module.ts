@@ -5,18 +5,23 @@ import { TenantsModule } from 'src/tenants/tenants.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { GuardsModule } from './guards/guards.module';
+import { PrismaService } from 'prisma/prisma.service';
+import { SecurityModule } from 'src/users/security/security.module';
+import { TenantLookupService } from 'src/utils/tenant-lookup.service';
+import { UserLookupService } from 'src/utils/user-lookup.service';
 @Module({
     imports: [
         UsersModule,
         RolesModule,
         TenantsModule,
+        SecurityModule,
         GuardsModule,
         JwtModule.register({
             secret: process.env.JWT_SECRET,
             signOptions: { expiresIn: '20m' }
         })
     ],
-    providers: [AuthService],
+    providers: [AuthService, PrismaService, TenantLookupService, UserLookupService],
     exports: [AuthService, JwtModule]
 })
 export class AuthModule {}

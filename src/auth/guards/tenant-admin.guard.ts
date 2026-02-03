@@ -6,16 +6,16 @@ import {
     NotFoundException,
     UnauthorizedException
 } from '@nestjs/common';
-import { RolesService } from 'src/roles/roles.service';
 import { AuthUser } from '../types/auth-user.type';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
 import { PrismaService } from 'prisma/prisma.service';
+import { RoleLookupService } from 'src/utils/role-lookup.service';
 
 @Injectable()
 export class TenantAdminGuard implements CanActivate {
     constructor(
         private readonly tenantLookupService: TenantLookupService,
-        private readonly rolesService: RolesService,
+        private readonly roleLookupService: RoleLookupService,
         private readonly prisma: PrismaService
     ) {}
 
@@ -54,7 +54,7 @@ export class TenantAdminGuard implements CanActivate {
             throw new ForbiddenException('User does not belong to this tenant');
         }
 
-        const isAdmin = await this.rolesService.hasRole(user.id, 'tenant:admin');
+        const isAdmin = await this.roleLookupService.hasRole(user.id, 'tenant:admin');
         if (!isAdmin) {
             throw new ForbiddenException('Admin role required to execute this operation');
         }

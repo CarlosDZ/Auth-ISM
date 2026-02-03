@@ -16,4 +16,12 @@ export class RoleLookupService {
 
         return role;
     }
+
+    async hasRole(userId: string, roleName: string): Promise<boolean> {
+        const role = await this.prisma.role.findFirst({
+            where: { name: roleName, users: { some: { userId: userId } } },
+            select: { id: true }
+        });
+        return !!role;
+    }
 }
