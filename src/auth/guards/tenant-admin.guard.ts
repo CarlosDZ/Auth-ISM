@@ -25,7 +25,7 @@ export class TenantAdminGuard implements CanActivate {
         const slug: string = req.params.slug;
 
         if (!authUser) {
-            throw new UnauthorizedException('Not authenticated');
+            throw new UnauthorizedException('Not valid authentification token found on the request');
         }
 
         const user = await this.prisma.user.findUnique({
@@ -33,16 +33,16 @@ export class TenantAdminGuard implements CanActivate {
         });
 
         if (!user) {
-            throw new NotFoundException('User not found');
+            throw new NotFoundException('Request-making user not found');
         }
         if (!user.isVerified) {
-            throw new ForbiddenException('Email not verified');
+            throw new ForbiddenException('Request-making user\'s email not verified');
         }
         if (!user.isActive) {
-            throw new ForbiddenException('User is not active');
+            throw new ForbiddenException('Request-making user is not active');
         }
         if (user.deletedAt !== null) {
-            throw new ForbiddenException('User account has been deleted');
+            throw new ForbiddenException('Request-making user\'s account has been deleted');
         }
 
         const tenant = await this.tenantLookupService.findBySlug(slug);
@@ -51,7 +51,7 @@ export class TenantAdminGuard implements CanActivate {
         }
 
         if (user.tenantId !== tenant.id) {
-            throw new ForbiddenException('User does not belong to this tenant');
+            throw new ForbiddenException('Request-making user does not belong to this tenant');
         }
 
         const isAdmin = await this.roleLookupService.hasRole(user.id, 'tenant:admin');

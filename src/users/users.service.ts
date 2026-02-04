@@ -69,16 +69,16 @@ export class UsersService {
             select: { isVerified: true, isActive: true, deletedAt: true }
         });
         if (!user) {
-            throw new NotFoundException('User not found');
+            throw new NotFoundException('Target user not found');
         }
         if (!user.isVerified) {
-            throw new ForbiddenException('Email not verified');
+            throw new ForbiddenException("Target user's email not verified");
         }
         if (!user.isActive) {
-            throw new ForbiddenException('User is not active');
+            throw new ForbiddenException('Target user is not active');
         }
         if (user.deletedAt !== null) {
-            throw new ForbiddenException('User account has been deleted');
+            throw new ForbiddenException("Target user's account has been deleted");
         }
     }
 
