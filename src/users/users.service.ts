@@ -161,4 +161,15 @@ export class UsersService {
         await this.prisma.userRole.delete({ where: { userId_roleId: { userId, roleId } } });
         return 'Role deleted from user successfully.';
     }
+
+    async getUserRoles(userId: string) {
+        const roles = await this.prisma.userRole.findMany({
+            where: { userId },
+            include: {
+                role: true
+            }
+        });
+
+        return roles.map((r) => r.role);
+    }
 }

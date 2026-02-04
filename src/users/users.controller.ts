@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, UseGuards, Delete } from '@nestjs/common';
+import { Controller, Post, Param, Body, UseGuards, Delete, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TenantLookupService } from 'src/utils/tenant-lookup.service';
@@ -70,5 +70,29 @@ export class UsersController {
         const userId: string = user.id;
 
         return this.usersService.deleteRoleFromUser(tenantId, userId, roleId);
+    }
+
+    @UseGuards(JwtAuthGuard, TenantAdminGuard)
+    @Get(':userMail')
+    async getUser(@Param('slug') slug: string, @Param('userMail') userMail: string) {
+        const tenant = await this.tenantLookupService.findBySlug(slug);
+        const tenantId: string = tenant.id;
+
+        const user = await this.userLookupService.findOnTenant(userMail, tenantId);
+
+        const roles = await this.usersService.getUserRoles(user.id);
+        const rolesById = roles.reduce((acc, role) => { acc[role.id] = { name: role.name, isActive: role.isActive }; return acc; }, {});
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            emailVerified: user.isVerified,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            isActive: user.isActive,
+            deletedAt: user.deletedAt,
+            roles: rolesById
+        };
     }
 }

@@ -12,9 +12,6 @@ export class CreateUserDto {
     @IsString()
     @MaxLength(192)
     name: string;
-
-    @IsString()
-    tenantId: string;
 }
 export class CreatedUserResponseDto {
     @IsEmail()
