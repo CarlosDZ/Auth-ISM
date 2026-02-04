@@ -140,7 +140,6 @@ model Session {
 }
 
 enum SessionType {
-    ACCESS // Sesión normal de usuario (login)
     REFRESH // Refresh token persistente
     API_KEY // Sesión creada por una API key
     MAGIC_LINK // Sesión temporal creada por magic link
