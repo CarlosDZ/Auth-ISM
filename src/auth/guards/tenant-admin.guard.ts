@@ -24,6 +24,8 @@ export class TenantAdminGuard implements CanActivate {
         const authUser: AuthUser = req.user;
         const slug: string = req.params.slug;
 
+        console.log('REQ USER:', req.user);
+
         if (!authUser) {
             throw new UnauthorizedException('Not authenticated');
         }
