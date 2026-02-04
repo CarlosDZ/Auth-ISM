@@ -13,4 +13,11 @@ export class AuthController {
 
         return this.authService.login(slug, dto, ip, userAgent);
     }
+    @Post('refresh')
+    async refresh(@Body() refreshToken: string, @Req() req){
+        const ip: string = req.ip ?? req.headers['x-forwarded-for'] ?? '';
+        const userAgent: string = req.headers['user-agent'] ?? '';
+
+        return this.authService.refresh(refreshToken, ip, userAgent)
+    }
 }
