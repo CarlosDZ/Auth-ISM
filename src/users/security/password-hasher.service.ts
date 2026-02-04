@@ -8,14 +8,21 @@ export class PasswordHasher {
     constructor() {
         const pepper = process.env.AUTH_PEPPER;
         if (!pepper) {
-            throw new Error('AUTH_PEPPER is not set. Cannot hash passwords without pepper. We can just ask to wait till we can resolve this incidence.');
+            throw new Error(
+                'AUTH_PEPPER is not set. Cannot hash passwords without pepper. We can just ask to wait till we can resolve this incidence.'
+            );
         }
         this.pepper = pepper;
     }
 
     async hash(password: string): Promise<string> {
         const input = password + this.pepper;
-        return await argon2.hash(input, { type: argon2.argon2id });
+        return await argon2.hash(input, {
+            type: argon2.argon2id,
+            memoryCost: 65536,
+            timeCost: 3,
+            parallelism: 1
+        });
     }
 
     async verify(hash: string, password: string): Promise<boolean> {
